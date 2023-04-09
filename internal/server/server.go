@@ -48,7 +48,7 @@ func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) Setup() {
 	users.Init(serverStorage{s.DB})
-	if err := s.DB.AutoMigrate(users.User{}); err != nil {
+	if err := s.DB.AutoMigrate(&users.User{}); err != nil {
 		log.Printf("error migrating: %s\n", err.Error())
 	}
 	log.Println("migrations complete")

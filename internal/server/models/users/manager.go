@@ -18,7 +18,7 @@ func (um *UserManager) Find(email string) (*User, error) {
 }
 
 func (um *UserManager) Save(u User) error {
-	return um.DB.Save(u, u.Email)
+	return um.DB.Save(&u, u.Email)
 }
 
 func (um *UserManager) PasswordHashByEmail(email string) (string, error) {

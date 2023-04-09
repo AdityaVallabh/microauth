@@ -2,7 +2,9 @@ package storage
 
 import (
 	"encoding/json"
+	"errors"
 	"microauth/pkg/storage"
+	"reflect"
 )
 
 type Storage struct {
@@ -10,15 +12,22 @@ type Storage struct {
 }
 
 func (s *Storage) AutoMigrate(v ...any) error {
+	for _, t := range v {
+		s.Set(s.getType(t), storage.Entry{})
+	}
 	return nil
 }
 
 func (s *Storage) Find(v any, _, keyValue string) error {
-	entry, err := s.Get(storage.Key(keyValue))
+	entry, err := s.Get(s.getType(v))
 	if err != nil {
 		return err
 	}
-	b, err := json.Marshal(entry)
+	val, ok := entry[keyValue]
+	if !ok {
+		return errors.New("not found")
+	}
+	b, err := json.Marshal(val)
 	if err != nil {
 		return err
 	}
@@ -35,7 +44,13 @@ func (s *Storage) Save(v any, keyValue string) error {
 	if err != nil {
 		return err
 	}
-	return s.Set(storage.Key(keyValue), entry)
+	db, _ := s.Get(s.getType(v))
+	db[keyValue] = entry
+	return nil
+}
+
+func (s *Storage) getType(v any) storage.Key {
+	return storage.Key(reflect.ValueOf(v).Type().String())
 }
 
 func NewInMem() *Storage {
