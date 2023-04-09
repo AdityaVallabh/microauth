@@ -2,7 +2,6 @@ package storage
 
 import (
 	"log"
-	"microauth/internal/server/models/users"
 	"microauth/pkg/storage"
 )
 
@@ -14,26 +13,12 @@ func (p *Postgres) AutoMigrate(v ...any) error {
 	return p.DB.AutoMigrate(v...)
 }
 
-func (p *Postgres) Find(key string, v any) error {
-	return p.DB.First(v, "email = ?", key).Error
+func (p *Postgres) Find(v any, keyName, keyValue string) error {
+	return p.DB.First(v, keyName+" = ?", keyValue).Error
 }
 
-func (p *Postgres) Save(v any) error {
+func (p *Postgres) Save(v any, _ string) error {
 	return p.DB.Save(v).Error
-}
-
-func (p *Postgres) PasswordHashByEmail(email string) (string, error) {
-	var user users.User
-	err := p.Find(email, &user)
-	return user.PasswordHash, err
-}
-
-func (p *Postgres) SetPasswordHashByEmail(email, phash string) error {
-	user := users.User{
-		Email:        email,
-		PasswordHash: phash,
-	}
-	return p.DB.Save(&user).Error
 }
 
 func NewPostgres() *Postgres {

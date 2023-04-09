@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"log"
 	"microauth/internal/server/models/users"
 	"net/http"
@@ -23,7 +24,16 @@ type Auther interface {
 
 type Storage interface {
 	AutoMigrate(...any) error
-	Find(string, any) error
+	Find(v any, keyName, keyValues string) error
+	Save(v any, keyValue string) error
+}
+
+type serverStorage struct {
+	Storage
+}
+
+func (s serverStorage) Save(_ any, _ string) error {
+	return errors.New("not allowed")
 }
 
 type Server struct {
@@ -37,6 +47,7 @@ func (s Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) Setup() {
+	users.Init(serverStorage{s.DB})
 	if err := s.DB.AutoMigrate(users.User{}); err != nil {
 		log.Printf("error migrating: %s\n", err.Error())
 	}

@@ -13,8 +13,8 @@ func (s *Storage) AutoMigrate(v ...any) error {
 	return nil
 }
 
-func (s *Storage) Find(key string, v any) error {
-	entry, err := s.Get(storage.Key(key))
+func (s *Storage) Find(v any, _, keyValue string) error {
+	entry, err := s.Get(storage.Key(keyValue))
 	if err != nil {
 		return err
 	}
@@ -25,7 +25,7 @@ func (s *Storage) Find(key string, v any) error {
 	return json.Unmarshal(b, v)
 }
 
-func (s *Storage) Save(v any) error {
+func (s *Storage) Save(v any, keyValue string) error {
 	var entry storage.Entry
 	b, err := json.Marshal(v)
 	if err != nil {
@@ -35,21 +35,7 @@ func (s *Storage) Save(v any) error {
 	if err != nil {
 		return err
 	}
-	return s.Set(entry["email"].(storage.Key), entry)
-}
-
-func (s *Storage) PasswordHashByEmail(email string) (string, error) {
-	entry, err := s.Get(storage.Key(email))
-	if err != nil {
-		return "", err
-	}
-	return entry["phash"].(string), nil
-}
-
-func (s *Storage) SetPasswordHashByEmail(email, phash string) error {
-	entry := make(storage.Entry)
-	entry["phash"] = phash
-	return s.Set(storage.Key(email), entry)
+	return s.Set(storage.Key(keyValue), entry)
 }
 
 func NewInMem() *Storage {

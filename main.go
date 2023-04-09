@@ -4,6 +4,7 @@ import (
 	"log"
 	"microauth/auth"
 	"microauth/internal/server"
+	"microauth/internal/server/models/users"
 	"microauth/internal/storage"
 	"microauth/pkg/crypto/cipher"
 	"microauth/pkg/crypto/hasher"
@@ -15,8 +16,9 @@ import (
 )
 
 func main() {
-	// db := storage.NewInMem()
-	db := storage.NewPostgres()
+	db := storage.NewInMem()
+	// db := storage.NewPostgres()
+	users.Init(db)
 	s := &server.Server{
 		Router: mux.NewRouter(),
 		DB:     db,
@@ -26,7 +28,7 @@ func main() {
 				Duration: 2 * time.Minute,
 			},
 			Hasher:  hasher.Sha2{},
-			Storage: db,
+			Storage: users.Manager,
 		},
 	}
 	s.Setup()

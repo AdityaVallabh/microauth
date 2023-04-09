@@ -13,16 +13,18 @@ func (s *Server) handleSignup() http.HandlerFunc {
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
 		req := &request{}
-		if s.decode(w, r, req) != nil {
+		if err := s.decode(w, r, req); err != nil {
+			log.Println("error decoding signup body", err.Error())
 			s.respond(w, r, http.StatusBadRequest, "invalid body")
 			return
 		}
 		if err := validate(req.Email, req.Password); err != nil {
+			log.Printf("signup email: %s, validation error: %s\n", req.Email, err.Error())
 			s.respond(w, r, http.StatusBadRequest, err.Error())
 			return
 		}
-		var user users.User
-		if s.DB.Find(req.Email, &user) == nil {
+		if _, err := users.Manager.Find(req.Email); err == nil {
+			log.Printf("signup email %s already exists", req.Email)
 			s.respond(w, r, http.StatusForbidden, "email exists")
 			return
 		}

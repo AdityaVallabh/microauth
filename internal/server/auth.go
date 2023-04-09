@@ -25,8 +25,7 @@ func (s *Server) auth(next http.HandlerFunc) http.HandlerFunc {
 			s.respond(w, r, http.StatusUnauthorized, "not logged in")
 			return
 		}
-		var user users.User
-		err = s.DB.Find(email, &user)
+		_, err = users.Manager.Find(email)
 		if err != nil {
 			s.respond(w, r, http.StatusUnauthorized, "not logged in")
 			return
