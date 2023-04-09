@@ -33,7 +33,12 @@ func (s *Server) handleLogin() http.HandlerFunc {
 		s.respond(w, r, http.StatusOK, "logged in")
 	}
 }
+
 func (s *Server) LogoutHandler(w http.ResponseWriter, r *http.Request) {
+	if !s.Auth.Invalidate(r.Context().Value(authKey).(string)) {
+		s.respond(w, r, http.StatusInternalServerError, "could not logout")
+		return
+	}
 	http.SetCookie(w, &http.Cookie{Name: "auth_token", Value: "", MaxAge: -1})
 	s.respond(w, r, http.StatusNoContent, "")
 }

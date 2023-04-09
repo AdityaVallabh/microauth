@@ -18,6 +18,7 @@ type Auther interface {
 	SavePassword(string, string) error
 	GenerateToken(string) (string, error)
 	Validate(string) (string, bool)
+	Invalidate(string) bool
 	CheckPassword(string, string) bool
 	GetExpiry(string) time.Time
 }

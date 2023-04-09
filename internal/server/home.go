@@ -16,7 +16,7 @@ func (s *Server) handleHome(templatesDir string) http.HandlerFunc {
 	tmpl := template.Must(template.ParseFiles(templatesDir + "/home.html"))
 	return func(w http.ResponseWriter, r *http.Request) {
 		email := r.Context().Value(emailKey).(string)
-		sessionExp := r.Context().Value(sessionExpiry).(time.Time)
+		sessionExp := s.Auth.GetExpiry(r.Context().Value(authKey).(string))
 		w.WriteHeader(http.StatusOK)
 		if err := tmpl.Execute(w, HomePage{
 			Title:    "myServer",

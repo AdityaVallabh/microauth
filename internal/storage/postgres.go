@@ -21,6 +21,10 @@ func (p *Postgres) Save(v any, _ string) error {
 	return p.DB.Save(v).Error
 }
 
+func (p *Postgres) Delete(v any, _ string) error {
+	return p.DB.Delete(v).Error
+}
+
 func NewPostgres() *Postgres {
 	p := storage.Postgres{
 		Host:     "localhost",

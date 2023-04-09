@@ -9,8 +9,8 @@ import (
 type Ckey string
 
 var (
-	emailKey      = Ckey("email")
-	sessionExpiry = Ckey("sessionExpiry")
+	emailKey = Ckey("email")
+	authKey  = Ckey("authKey")
 )
 
 func (s *Server) auth(next http.HandlerFunc) http.HandlerFunc {
@@ -30,13 +30,9 @@ func (s *Server) auth(next http.HandlerFunc) http.HandlerFunc {
 			s.respond(w, r, http.StatusUnauthorized, "not logged in")
 			return
 		}
-		r = r.WithContext(
-			context.WithValue(
-				context.WithValue(r.Context(), emailKey, email),
-				sessionExpiry,
-				s.Auth.GetExpiry(token.Value),
-			),
-		)
+		ctx := context.WithValue(r.Context(), emailKey, email)
+		ctx = context.WithValue(ctx, authKey, token.Value)
+		r = r.WithContext(ctx)
 		next(w, r)
 	})
 }

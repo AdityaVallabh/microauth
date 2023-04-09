@@ -44,8 +44,26 @@ func (s *Storage) Save(v any, keyValue string) error {
 	if err != nil {
 		return err
 	}
-	db, _ := s.Get(s.getType(v))
+	db, err := s.Get(s.getType(v))
+	if err != nil {
+		return err
+	}
 	db[keyValue] = entry
+	return nil
+}
+
+func (s *Storage) Delete(v any, keyValue string) error {
+	var entry storage.Entry
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(b, &entry)
+	if err != nil {
+		return err
+	}
+	db, _ := s.Get(s.getType(v))
+	delete(db, keyValue)
 	return nil
 }
 

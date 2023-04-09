@@ -16,13 +16,13 @@ type SimpleTokenManager struct {
 }
 
 type SimpleToken struct {
-	Id          string
-	ExpireAfter time.Time
+	Id     string
+	Expiry time.Time
 }
 
 // yes, I could use json encoder/decoder
 func (t SimpleToken) Serialize() []byte {
-	return []byte(t.Id + ":" + t.ExpireAfter.Format(time.RFC3339))
+	return []byte(t.Id + ":" + t.Expiry.Format(time.RFC3339))
 }
 
 func (t *SimpleToken) Deserialize(b []byte) bool {
@@ -35,14 +35,14 @@ func (t *SimpleToken) Deserialize(b []byte) bool {
 		return false
 	}
 	t.Id = string(email)
-	t.ExpireAfter = exp
+	t.Expiry = exp
 	return true
 }
 
 func (t *SimpleTokenManager) GenerateToken(email string) (string, error) {
 	token := SimpleToken{
-		Id:          email,
-		ExpireAfter: time.Now().Add(t.Duration),
+		Id:     email,
+		Expiry: time.Now().Add(t.Duration),
 	}
 	return string(t.Cipher.Encrypt(token.Serialize())), nil
 }
@@ -53,7 +53,7 @@ func (t *SimpleTokenManager) Validate(s string) (string, bool) {
 	if !token.Deserialize(dec) {
 		return "", false
 	}
-	if token.ExpireAfter.Before(time.Now()) {
+	if token.Expiry.Before(time.Now()) {
 		return "", false
 	}
 	return token.Id, true
@@ -69,5 +69,5 @@ func (t *SimpleTokenManager) GetExpiry(s string) time.Time {
 	if !token.Deserialize(dec) {
 		return time.Time{}
 	}
-	return token.ExpireAfter
+	return token.Expiry
 }
