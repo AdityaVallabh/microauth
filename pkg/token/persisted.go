@@ -2,13 +2,17 @@ package token
 
 import (
 	"encoding/hex"
+	"errors"
+	"log"
 	"math/rand"
+	"sync"
 	"time"
 )
 
 type Store interface {
 	Save(any, string) error
 	Find(any, string, string) error
+	FindAll(any) error
 	Delete(any, string) error
 }
 
@@ -43,11 +47,14 @@ func (t *PersistedTokenManager) Validate(s string) (string, bool) {
 	if err := t.Store.Find(&token, "token", s); err != nil {
 		return "", false
 	}
+	if token.Expiry.Before(time.Now()) {
+		return "", false
+	}
 	return token.Id, true
 }
 
 func (t *PersistedTokenManager) Invalidate(s string) bool {
-	return t.Store.Delete(&PersistedToken{}, s) == nil
+	return t.Store.Delete(&PersistedToken{Token: s}, s) == nil
 }
 
 func (t *PersistedTokenManager) GetExpiry(s string) time.Time {
@@ -56,4 +63,61 @@ func (t *PersistedTokenManager) GetExpiry(s string) time.Time {
 		return time.Time{}
 	}
 	return token.Expiry
+}
+
+func (t *PersistedTokenManager) CleanupExpiredTokens() error {
+	var tokens []PersistedToken
+	if err := t.Store.FindAll(&tokens); err != nil {
+		return err
+	}
+	total, failed := 0, 0
+	wg := &sync.WaitGroup{}
+	c := make(chan struct{}, 2)
+	failedTokens := make(chan string)
+	for _, token := range tokens {
+		if token.Expiry.Before(time.Now()) {
+			c <- struct{}{}
+			wg.Add(1)
+			total++
+			go func(token PersistedToken) {
+				defer func() {
+					wg.Done()
+					<-c
+				}()
+				if !t.Invalidate(token.Token) {
+					failedTokens <- token.Token
+				}
+			}(token)
+		}
+	}
+	go func() {
+		for token := range failedTokens {
+			log.Println("could not cleanup expired token", token)
+			failed++
+		}
+	}()
+	wg.Wait()
+	close(failedTokens)
+	log.Printf("Expired tokens: %d, Cleaned up: %d, Failed: %d\n", total, total-failed, failed)
+	if failed > 0 {
+		return errors.New("could not cleanup all expired tokens")
+	}
+	return nil
+}
+
+func (t *PersistedTokenManager) RunCleaner(stop <-chan struct{}) {
+	ticker := time.NewTicker(time.Second * 20)
+	go func() {
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				if err := t.CleanupExpiredTokens(); err != nil {
+					log.Println(err.Error())
+				}
+			case <-stop:
+				return
+			}
+		}
+	}()
 }

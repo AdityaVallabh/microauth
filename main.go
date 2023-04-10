@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"math/rand"
 	"net/http"
@@ -17,10 +18,16 @@ import (
 )
 
 func main() {
-	db := storage.NewInMem()
-	// db := storage.NewPostgres()
+	// db := storage.NewInMem()
+	db := storage.NewPostgres()
 	users.Init(db)
 	db.AutoMigrate(&token.PersistedToken{})
+	tm := &token.PersistedTokenManager{
+		Rand:     *rand.New(rand.NewSource(time.Now().Unix())),
+		Store:    db,
+		Duration: time.Second * 30,
+	}
+	tm.RunCleaner(context.Background().Done())
 	s := &server.Server{
 		Router: mux.NewRouter(),
 		DB:     db,
@@ -29,13 +36,9 @@ func main() {
 			// 	Cipher:   cipher.HexCipher{},
 			// 	Duration: 2 * time.Minute,
 			// },
-			TokenManager: &token.PersistedTokenManager{
-				Rand:     *rand.New(rand.NewSource(time.Now().Unix())),
-				Store:    db,
-				Duration: 2 * time.Minute,
-			},
-			Hasher:  hasher.Sha2{},
-			Storage: users.Manager,
+			TokenManager: tm,
+			Hasher:       hasher.Sha2{},
+			Storage:      users.Manager,
 		},
 	}
 	s.Setup()
