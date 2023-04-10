@@ -2,8 +2,9 @@ package server
 
 import (
 	"log"
-	"microauth/internal/server/models/users"
 	"net/http"
+
+	"github.com/AdityaVallabh/microauth/internal/server/models/users"
 )
 
 func (s *Server) handleSignup() http.HandlerFunc {

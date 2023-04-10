@@ -3,9 +3,10 @@ package server
 import (
 	"errors"
 	"log"
-	"microauth/internal/server/models/users"
 	"net/http"
 	"time"
+
+	"github.com/AdityaVallabh/microauth/internal/server/models/users"
 
 	"github.com/gorilla/mux"
 )

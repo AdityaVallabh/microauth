@@ -2,8 +2,9 @@ package server
 
 import (
 	"context"
-	"microauth/internal/server/models/users"
 	"net/http"
+
+	"github.com/AdityaVallabh/microauth/internal/server/models/users"
 )
 
 type Ckey string

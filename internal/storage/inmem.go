@@ -3,8 +3,9 @@ package storage
 import (
 	"encoding/json"
 	"errors"
-	"microauth/pkg/storage"
 	"reflect"
+
+	"github.com/AdityaVallabh/microauth/pkg/storage"
 )
 
 type Storage struct {

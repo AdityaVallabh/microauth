@@ -3,14 +3,15 @@ package main
 import (
 	"log"
 	"math/rand"
-	"microauth/auth"
-	"microauth/internal/server"
-	"microauth/internal/server/models/users"
-	"microauth/internal/storage"
-	"microauth/pkg/crypto/hasher"
-	"microauth/pkg/token"
 	"net/http"
 	"time"
+
+	"github.com/AdityaVallabh/microauth/auth"
+	"github.com/AdityaVallabh/microauth/internal/server"
+	"github.com/AdityaVallabh/microauth/internal/server/models/users"
+	"github.com/AdityaVallabh/microauth/internal/storage"
+	"github.com/AdityaVallabh/microauth/pkg/crypto/hasher"
+	"github.com/AdityaVallabh/microauth/pkg/token"
 
 	"github.com/gorilla/mux"
 )

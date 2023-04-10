@@ -1,4 +1,4 @@
-module microauth
+module github.com/AdityaVallabh/microauth
 
 go 1.20
 

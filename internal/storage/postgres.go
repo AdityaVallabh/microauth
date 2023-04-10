@@ -2,7 +2,8 @@ package storage
 
 import (
 	"log"
-	"microauth/pkg/storage"
+
+	"github.com/AdityaVallabh/microauth/pkg/storage"
 )
 
 type Postgres struct {
@@ -15,6 +16,10 @@ func (p *Postgres) AutoMigrate(v ...any) error {
 
 func (p *Postgres) Find(v any, keyName, keyValue string) error {
 	return p.DB.First(v, keyName+" = ?", keyValue).Error
+}
+
+func (p *Postgres) FindAll(v any) error {
+	return p.DB.Find(v).Error
 }
 
 func (p *Postgres) Save(v any, _ string) error {
